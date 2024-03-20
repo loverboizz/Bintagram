@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "250524077971",
+    "project_id": "bingtagram",
+    "storage_bucket": "bingtagram.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250524077971:android:535943d74e439e4c63e266",
+        "android_client_info": {
+          "package_name": "com.example.bingtagram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2C_6jTXpHqrBwZZl9ssAiggexV2HdTwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250524077971:android:083953cdb10f6f2563e266",
+        "android_client_info": {
+          "package_name": "com.example.bintagram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2C_6jTXpHqrBwZZl9ssAiggexV2HdTwg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
