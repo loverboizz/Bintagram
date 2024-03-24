@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "250524077971",
-    "project_id": "bingtagram",
-    "storage_bucket": "bingtagram.appspot.com"
+    "project_number": "670782655128",
+    "project_id": "dacs3-c2eeb",
+    "storage_bucket": "dacs3-c2eeb.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:250524077971:android:535943d74e439e4c63e266",
+        "mobilesdk_app_id": "1:670782655128:android:16356855a42d15063e9eed",
         "android_client_info": {
-          "package_name": "com.example.bingtagram"
+          "package_name": "com.example.bintagram"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA2C_6jTXpHqrBwZZl9ssAiggexV2HdTwg"
+          "current_key": "AIzaSyCE8sSZWEeAEA3ErCZWRXH0DlsqiTWtvHE"
         }
       ],
       "services": {
@@ -26,15 +26,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:250524077971:android:083953cdb10f6f2563e266",
+        "mobilesdk_app_id": "1:670782655128:android:a8d7e06b26280d2a3e9eed",
         "android_client_info": {
-          "package_name": "com.example.bintagram"
+          "package_name": "com.example.dacs3"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA2C_6jTXpHqrBwZZl9ssAiggexV2HdTwg"
+          "current_key": "AIzaSyCE8sSZWEeAEA3ErCZWRXH0DlsqiTWtvHE"
         }
       ],
       "services": {
