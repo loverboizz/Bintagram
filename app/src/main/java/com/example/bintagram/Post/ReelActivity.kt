@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.bintagram.HomeActivity
 import com.example.bintagram.Models.Reel
 import com.example.bintagram.Models.User
+import com.example.bintagram.R
 import com.example.bintagram.databinding.ActivityReelBinding
 import com.example.bintagram.utils.REEL
 import com.example.bintagram.utils.REEL_FOLDER
@@ -54,8 +55,15 @@ class ReelActivity : AppCompatActivity() {
         binding.postButton.setOnClickListener{
             Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
                 var user:User=it.toObject<User>()!!
+                val imageUrl: String? = if (user?.image != null) {
+                    user.image
+                } else {
+                    val defaultImageResourceId = R.drawable.avatarr
+                    // Chuyển đổi ID của hình ảnh mặc định sang URL chuẩn
+                    "android.resource://com.example.bintagram/${R.drawable.avatarr}"
+                }
 
-                val reel: Reel = Reel(videoUrl!!, binding.caption.editText?.text.toString(), user.image!!)
+                val reel: Reel = Reel(videoUrl!!, binding.caption.editText?.text.toString(), imageUrl!!)
 
                 Firebase.firestore.collection(REEL).document().set(reel).addOnSuccessListener {
                     Firebase.firestore.collection(Firebase.auth.currentUser!!.uid+ REEL).document().set(reel).addOnSuccessListener {
