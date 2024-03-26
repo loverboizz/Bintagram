@@ -3,6 +3,7 @@ package com.example.bintagram.Post
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.bintagram.HomeActivity
 import com.example.bintagram.Models.Post
@@ -16,6 +17,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class PostActivity : AppCompatActivity() {
     val binding by lazy {
@@ -58,7 +61,6 @@ class PostActivity : AppCompatActivity() {
             Firebase.firestore.collection(USER_NODE).document().get()
                 .addOnSuccessListener {
 
-                //var user=it.toObject<User>()!!
                 val post:Post= Post(postUrl =imageUrl!!,
                     caption = binding.caption.editText?.text.toString(),
                     uid = Firebase.auth.currentUser!!.uid,

@@ -1,6 +1,7 @@
 package com.example.bintagram.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +11,7 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.databinding.PostRvBinding
 import com.example.bintagram.utils.USER_NODE
+import com.github.marlonlom.utilities.timeago.TimeAgo
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -39,8 +41,23 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
         }
 
         Glide.with(context).load(postList.get(position).postUrl).placeholder(R.drawable.loading).into(holder.binding.postImage)
-        holder.binding.time.text=postList.get(position).time
+        try {
+            val text = TimeAgo.using(postList.get(position).time.toLong())
+            holder.binding.time.text=text
+        }catch (e : Exception){
+            holder.binding.time.text=""
+        }
+
+        holder.binding.share.setOnClickListener{
+            var i = Intent(android.content.Intent.ACTION_SEND)
+            i.type="text/plain"
+            i.putExtra(Intent.EXTRA_TEXT, postList.get(position).postUrl)
+            context.startActivity(i)
+        }
         holder.binding.caption.text=postList.get(position).caption
+        holder.binding.like.setOnClickListener{
+            holder.binding.like.setImageResource(R.drawable.redheart)
+        }
 
     }
 

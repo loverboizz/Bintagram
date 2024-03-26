@@ -25,4 +25,4 @@ class MyPostRvAdapter (var context: Context, var postList:ArrayList<Post>): Recy
         holder.binding.postImage
         Picasso.get().load(postList.get(position).postUrl).into(holder.binding.postImage)
     }
-}
+}       
