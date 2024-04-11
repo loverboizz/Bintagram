@@ -84,6 +84,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
         android:hint="Password"
+
         app:layout_constraintEnd_toEndOf="@+id/email"
         app:layout_constraintStart_toStartOf="@+id/email"
         app:layout_constraintTop_toBottomOf="@+id/email">
@@ -91,6 +92,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textPassword"
             android:visibility="visible" />
 
     </com.google.android.material.textfield.TextInputLayout>

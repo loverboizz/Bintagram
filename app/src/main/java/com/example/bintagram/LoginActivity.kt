@@ -1,19 +1,19 @@
+
 package com.example.bintagram
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.bintagram.Models.User
 import com.example.bintagram.databinding.ActivityLoginBinding
-import com.example.bintagram.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-
 class LoginActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityLoginBinding.inflate(layoutInflater)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -24,7 +24,7 @@ class LoginActivity : AppCompatActivity() {
             }else{
                 var user =  User(binding.email.editText?.text.toString(),
                     binding.password.editText?.text.toString())
-                Firebase.auth.signInWithEmailAndPassword(user.email!!,user.password!!)
+                Firebase.auth.signInWithEmailAndPassword(user.email!!,user.uid!!)
                     .addOnCompleteListener{
                         if (it.isSuccessful){
                             startActivity(Intent(this@LoginActivity,HomeActivity::class.java))

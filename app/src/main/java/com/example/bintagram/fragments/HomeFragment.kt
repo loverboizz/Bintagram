@@ -1,16 +1,19 @@
 package com.example.bintagram.fragments
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bintagram.ChatActivity
 import com.example.bintagram.Models.Post
 import com.example.bintagram.Models.User
+import com.example.bintagram.NotificationActivity
 import com.example.bintagram.R
 import com.example.bintagram.adapters.FollowAdapter
 import com.example.bintagram.adapters.PostAdapter
@@ -27,7 +30,7 @@ import com.squareup.picasso.Picasso
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private var postList= ArrayList<Post>()
-    private lateinit var adapter: PostAdapter
+    private lateinit var postAdapter: PostAdapter
     private var followList=ArrayList<User>()
     private lateinit var followAdapter: FollowAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,9 +43,9 @@ class HomeFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding= FragmentHomeBinding.inflate(inflater, container, false)
-        adapter= PostAdapter(requireContext(), postList)
+        postAdapter= PostAdapter(requireContext(), postList)
         binding.postRv.layoutManager=LinearLayoutManager(requireContext())
-        binding.postRv.adapter=adapter
+        binding.postRv.adapter=postAdapter
 
         followAdapter = FollowAdapter(requireContext(), followList)
         binding.folowRv.layoutManager=LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -59,7 +62,7 @@ class HomeFragment : Fragment() {
                 tempList.add(user)
             }
             followList.addAll(tempList)
-            adapter.notifyDataSetChanged()
+            followAdapter.notifyDataSetChanged()
         }
 
 
@@ -71,7 +74,24 @@ class HomeFragment : Fragment() {
                 tempList.add(post)
             }
             postList.addAll(tempList)
-            adapter.notifyDataSetChanged()
+            postAdapter.notifyDataSetChanged()
+        }
+        binding.materialToolbar2.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.message -> {
+                    val intent = Intent(activity, ChatActivity::class.java) // Specify the Activity you want to navigate to
+                    startActivity(intent)
+
+                    true // Trả về true để chỉ ra rằng sự kiện đã được xử lý
+                }
+                R.id.notification -> {
+                    val intent = Intent(activity, NotificationActivity::class.java) // Specify the Activity you want to navigate to
+                    startActivity(intent)
+
+                    true // Trả về true để chỉ ra rằng sự kiện đã được xử lý
+                }
+                else -> false // Trả về false để báo rằng sự kiện chưa được xử lý
+            }
         }
 
 
@@ -82,7 +102,10 @@ class HomeFragment : Fragment() {
         super.onStart()
         Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
             val user:User = it.toObject<User>()!!
-            if (!user.image.isNullOrEmpty()){
+            if (user.image.isNullOrEmpty()){
+
+            }
+            else{
                 Picasso.get().load(user.image).into(binding.profileImage)
             }
         }

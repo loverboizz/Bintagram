@@ -65,6 +65,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
         android:hint="Password"
+
         app:layout_constraintEnd_toEndOf="@+id/email"
         app:layout_constraintStart_toStartOf="@+id/email"
         app:layout_constraintTop_toBottomOf="@+id/email">
@@ -73,6 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible"
+            android:inputType="textPassword"
             tools:layout_editor_absoluteX="-16dp"
             tools:layout_editor_absoluteY="45dp" />
 
@@ -93,6 +95,7 @@
         app:layout_constraintStart_toStartOf="@+id/password"
         app:layout_constraintTop_toBottomOf="@+id/password"
         app:layout_constraintVertical_bias="0.083" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,6 +14,9 @@ import com.example.bintagram.utils.USER_PROFILE_FOLDER
 import com.example.bintagram.utils.uploadImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
@@ -25,6 +28,7 @@ class SignUpActivity : AppCompatActivity() {
         ActivitySignUpBinding.inflate(layoutInflater)
     }
     lateinit var user:User
+    private lateinit var mDbRef: DatabaseReference
     private val launcher= registerForActivityResult(ActivityResultContracts.GetContent()){
             uri->
         uri?.let {
@@ -41,11 +45,13 @@ class SignUpActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val text ="<font color=#FF000000>Already have an Account</font> <font color=#1E88E5>Login</font>"
+        val text2 ="<font color=#FF000000>Already have another Account</font> <font color=#1E88E5>Logout</font>"
         binding.login.setText(Html.fromHtml(text))
         user=User()
         if (intent.hasExtra("MODE")){
             if (intent.getIntExtra("MODE",-1)== 1){
                 binding.signUpBtn.text="Update Profile"
+                binding.login.setText(Html.fromHtml(text2))
                 Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
                     user = it.toObject<User>()!!
                     if (!user.image.isNullOrEmpty()){
@@ -53,9 +59,10 @@ class SignUpActivity : AppCompatActivity() {
                     }
                     binding.name.editText?.setText(user.name)
                     binding.email.editText?.setText(user.email)
-                    binding.password.editText?.setText(user.password)
+                    binding.password.editText?.setText(user.uid)
 
                 }
+
             }
         }
         binding.signUpBtn.setOnClickListener {
@@ -91,8 +98,9 @@ class SignUpActivity : AppCompatActivity() {
 
                         if (result.isSuccessful) {
                             user.name = binding.name.editText?.text.toString()
-                            user.password = binding.password.editText?.text.toString()
+                            user.status = "default"
                             user.email = binding.email.editText?.text.toString()
+                            user.uid = Firebase.auth.currentUser!!.uid
                             Firebase.firestore.collection(USER_NODE)
                                 .document(Firebase.auth.currentUser!!.uid).set(user)
                                 .addOnSuccessListener {
@@ -104,6 +112,8 @@ class SignUpActivity : AppCompatActivity() {
                                     )
                                     finish()
                                 }
+                            mDbRef= FirebaseDatabase.getInstance().getReference()
+                            mDbRef.child("user").child(Firebase.auth.currentUser!!.uid).setValue(user)
 
                         } else {
                             Toast.makeText(
@@ -121,6 +131,7 @@ class SignUpActivity : AppCompatActivity() {
             launcher.launch("image/*")
         }
         binding.login.setOnClickListener{
+            FirebaseAuth.getInstance().signOut()
             startActivity(Intent(this@SignUpActivity,LoginActivity::class.java))
             finish()
         }

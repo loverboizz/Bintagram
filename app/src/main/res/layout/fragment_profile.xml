@@ -31,17 +31,19 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
             android:text="name"
-            app:layout_constraintBottom_toTopOf="@+id/bio"
+            app:layout_constraintBottom_toTopOf="@+id/email"
             app:layout_constraintStart_toEndOf="@+id/profile_image"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
-            android:id="@+id/bio"
+            android:id="@+id/email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bio"
+            android:layout_marginTop="16dp"
+            android:text="email"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/name"
             app:layout_constraintTop_toBottomOf="@+id/name" />
@@ -54,10 +56,10 @@
             android:layout_marginTop="16dp"
             android:backgroundTint="@color/blue"
             android:text="Edit Profile"
-            android:textSize="14sp"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/profile_image"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.88"
+            app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintStart_toEndOf="@+id/profile_image"
             app:layout_constraintTop_toTopOf="@+id/profile_image" />
 
