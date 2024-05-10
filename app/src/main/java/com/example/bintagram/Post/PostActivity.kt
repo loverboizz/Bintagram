@@ -1,29 +1,27 @@
 package com.example.bintagram.Post
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.bintagram.HomeActivity
 import com.example.bintagram.Models.Post
-import com.example.bintagram.Models.User
 import com.example.bintagram.databinding.ActivityPostBinding
 import com.example.bintagram.utils.POST
 import com.example.bintagram.utils.POST_FOLDER
 import com.example.bintagram.utils.USER_NODE
 import com.example.bintagram.utils.uploadImage
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
-import java.text.SimpleDateFormat
-import java.util.Date
 
 class PostActivity : AppCompatActivity() {
     val binding by lazy {
         ActivityPostBinding.inflate(layoutInflater)
     }
+    private lateinit var mDbRef: DatabaseReference
     var imageUrl:String? = null
     private val launcher= registerForActivityResult(ActivityResultContracts.GetContent()){
             uri->
@@ -57,21 +55,30 @@ class PostActivity : AppCompatActivity() {
             finish()
         }
 
-        binding.postButton.setOnClickListener{
-            Firebase.firestore.collection(USER_NODE).document().get()
-                .addOnSuccessListener {
+        mDbRef= FirebaseDatabase.getInstance().getReference()
 
-                val post:Post= Post(postUrl =imageUrl!!,
+        binding.postButton.setOnClickListener{
+            Firebase.firestore.collection(USER_NODE).document().get().addOnSuccessListener {
+                val post:Post= Post(postId = mDbRef.push().key!!,
+                    postUrl =imageUrl!!,
                     caption = binding.caption.editText?.text.toString(),
                     uid = Firebase.auth.currentUser!!.uid,
                     time= System.currentTimeMillis().toString())
 
-                Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
-                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener {
+
+                mDbRef.child(POST).child(post.postId).setValue(post).addOnSuccessListener {
+                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener{
                         startActivity(Intent(this@PostActivity,HomeActivity::class.java))
                         finish()
                     }
                 }
+//                Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
+//                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener {
+//                        startActivity(Intent(this@PostActivity,HomeActivity::class.java))
+//                        finish()
+//                    }
+//                }
+
             }
 
         }

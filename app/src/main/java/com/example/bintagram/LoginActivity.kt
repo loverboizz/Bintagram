@@ -9,7 +9,7 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.databinding.ActivityLoginBinding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-class LoginActivity : AppCompatActivity() {
+class  LoginActivity : AppCompatActivity() {
     private val binding by lazy {
         ActivityLoginBinding.inflate(layoutInflater)
     }

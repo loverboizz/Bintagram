@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Html
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.bintagram.Models.User
@@ -112,8 +113,14 @@ class SignUpActivity : AppCompatActivity() {
                                     )
                                     finish()
                                 }
+                            Firebase.auth.currentUser!!.sendEmailVerification()
+                                .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Log.d("verify", "Email sent.")
+                                }
+                            }
                             mDbRef= FirebaseDatabase.getInstance().getReference()
-                            mDbRef.child("user").child(Firebase.auth.currentUser!!.uid).setValue(user)
+                            mDbRef.child(USER_NODE).child(Firebase.auth.currentUser!!.uid).setValue(user)
 
                         } else {
                             Toast.makeText(

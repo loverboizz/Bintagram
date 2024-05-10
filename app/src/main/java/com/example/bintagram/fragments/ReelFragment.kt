@@ -1,26 +1,26 @@
 package com.example.bintagram.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.Orientation
+import androidx.fragment.app.Fragment
 import com.example.bintagram.Models.Reel
-import com.example.bintagram.R
 import com.example.bintagram.adapters.ReelAdapter
 import com.example.bintagram.databinding.FragmentReelBinding
 import com.example.bintagram.utils.REEL
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.ktx.Firebase
 
 
 class ReelFragment : Fragment() {
 
     private lateinit var binding: FragmentReelBinding
-    lateinit var adapter: ReelAdapter
-    var reelList= ArrayList<Reel>()
+    private lateinit var mDbRef: DatabaseReference
+    private lateinit var reelAdapter: ReelAdapter
+    private var reelList= ArrayList<Reel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -32,8 +32,8 @@ class ReelFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding=FragmentReelBinding.inflate(inflater, container, false)
-        adapter = ReelAdapter(requireContext(), reelList)
-        binding.viewPager.adapter= adapter
+        reelAdapter = ReelAdapter(requireContext(), reelList)
+        binding.viewPager.adapter= reelAdapter
         Firebase.firestore.collection(REEL).get().addOnSuccessListener {
 
             var tempList= ArrayList<Reel>()
@@ -44,8 +44,29 @@ class ReelFragment : Fragment() {
             }
             reelList.addAll(tempList)
             reelList.reverse()
-            adapter.notifyDataSetChanged()
+            reelAdapter.notifyDataSetChanged()
         }
+//        mDbRef = FirebaseDatabase.getInstance().getReference(REEL)
+//        mDbRef.orderByKey().limitToLast(1000).addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                reelList.clear()
+//                if (snapshot.exists()){
+//                    for (i in snapshot.children){
+//                        val reels = i.getValue(Reel::class.java)
+//                        reelList.add(reels!!)
+//                    }
+//                }
+//                reelList.reverse()
+//                reelAdapter= ReelAdapter(binding.root.context, reelList)
+//                binding.viewPager.adapter=reelAdapter
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                Toast.makeText(context, "ERROR: $error", Toast.LENGTH_LONG).show()
+//            }
+//
+//        })
+
         return binding.root
     }
 

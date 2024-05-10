@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.example.bintagram.LoginActivity
 import com.example.bintagram.Models.User
+import com.example.bintagram.NotificationActivity
 import com.example.bintagram.SignUpActivity
 import com.example.bintagram.adapters.ViewPagerAdapter
 import com.example.bintagram.databinding.FragmentProfileBinding
@@ -33,12 +35,26 @@ class ProfileFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = FragmentProfileBinding.inflate(inflater, container, false)
 
-        binding.editProfile.setOnClickListener{
+        binding.editProfile.setOnClickListener {
+            val user = Firebase.auth.currentUser
+            if (user != null) {
+                user.delete()
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val intent = Intent(requireActivity(), LoginActivity::class.java)
+                            startActivity(intent)
+                        }
+                    }
+            }
+        }
+
+        binding.profileImage.setOnClickListener {
             val intent = Intent(activity,SignUpActivity::class.java)
             intent.putExtra("MODE",1)
             activity?.startActivity(intent)
             activity?.finish()
         }
+
         viewPagerAdapter =ViewPagerAdapter(requireActivity().supportFragmentManager)
         viewPagerAdapter.addFragments(MyPostFragment(), "My Post")
         viewPagerAdapter.addFragments(MyReelFragment(), "My Reel")

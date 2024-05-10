@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomFontTextViewStyle" parent="MaterialAlertDialog.Material3.Body.Text.CenterStacked">
+        <item name="android:textStyle">bold</item> <!-- You can also specify "bold" here if needed -->
+    </style>
+</resources>

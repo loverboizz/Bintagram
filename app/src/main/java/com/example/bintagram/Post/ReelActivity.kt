@@ -8,13 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.bintagram.HomeActivity
 import com.example.bintagram.Models.Reel
 import com.example.bintagram.Models.User
-import com.example.bintagram.R
 import com.example.bintagram.databinding.ActivityReelBinding
 import com.example.bintagram.utils.REEL
 import com.example.bintagram.utils.REEL_FOLDER
 import com.example.bintagram.utils.USER_NODE
 import com.example.bintagram.utils.uploadVideo
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -24,6 +25,7 @@ class ReelActivity : AppCompatActivity() {
     val binding by lazy {
         ActivityReelBinding.inflate(layoutInflater)
     }
+    private lateinit var mDbRef: DatabaseReference
     private lateinit var videoUrl:String
     lateinit var progressDialog:ProgressDialog
     private val launcher= registerForActivityResult(ActivityResultContracts.GetContent()){
@@ -51,27 +53,46 @@ class ReelActivity : AppCompatActivity() {
             startActivity(Intent(this@ReelActivity, HomeActivity::class.java))
             finish()
         }
+        mDbRef= FirebaseDatabase.getInstance().getReference()
 
         binding.postButton.setOnClickListener{
             Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
-                var user:User=it.toObject<User>()!!
-                val imageUrl: String? = if (user?.image != null) {
-                    user.image
-                } else {
-                    val defaultImageResourceId = R.drawable.avatarr
-                    // Chuyển đổi ID của hình ảnh mặc định sang URL chuẩn
-                    "android.resource://com.example.bintagram/${R.drawable.avatarr}"
-                }
+                var user: User =it.toObject<User>()!!
+//                val imageUrl: String? = if (user?.image != null) {
+//                    user.image
+//                } else {
+//                    val defaultImageResourceId = R.drawable.avatarr
+//                    // Chuyển đổi ID của hình ảnh mặc định sang URL chuẩn
+//                    "android.resource://com.example.bintagram/${R.drawable.avatarr}"
+//                }
 
-                val reel: Reel = Reel(videoUrl!!, binding.caption.editText?.text.toString(), imageUrl!!)
+                val reel: Reel = Reel(reelId = mDbRef.push().key!!,
+                    reelUrl = videoUrl,
+                    caption=binding.caption.editText?.text.toString(),
+                    uid = Firebase.auth.currentUser!!.uid)
+
+
 
                 Firebase.firestore.collection(REEL).document().set(reel).addOnSuccessListener {
-                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid+ REEL).document().set(reel).addOnSuccessListener {
+                    startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
+                    finish()
+                }
+
+                mDbRef.child(REEL).child(reel.reelId).setValue(reel).addOnSuccessListener {
+                    Firebase.firestore.collection(reel.uid+ REEL).document().set(reel).addOnSuccessListener {
                         startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
                         finish()
                     }
                 }
             }
+//            val reel: Reel = Reel(reelId = mDbRef.push().key!!,
+//                reelUrl = videoUrl,
+//                caption=binding.caption.editText?.text.toString(),
+//                uid = Firebase.auth.currentUser!!.uid)
+//            mDbRef.child(REEL).child(reel.reelId).setValue(reel).addOnSuccessListener {
+//                startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
+//                finish()
+//            }
 
         }
     }

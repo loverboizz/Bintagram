@@ -14,8 +14,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class ChatActivity : AppCompatActivity() {
     val binding by lazy {
@@ -59,8 +62,6 @@ class ChatActivity : AppCompatActivity() {
 
                     for (followDocument in followQuerySnapshot.documents) {
                         val userfl = followDocument.toObject<User>() ?: continue
-                        Log.d("i_id: ", user.uid!!)
-                        Log.d("j_id: ", userfl.uid!!)
                         if (userfl.uid == Firebase.auth.currentUser!!.uid) {
                             tempList.add(user)
                             break // No need to continue if the user is found

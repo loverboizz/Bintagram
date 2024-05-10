@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,11 @@ import com.example.bintagram.utils.FOLLOW
 import com.example.bintagram.utils.POST
 import com.example.bintagram.utils.USER_NODE
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -29,6 +35,7 @@ import com.squareup.picasso.Picasso
 
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var mDbRef: DatabaseReference
     private var postList= ArrayList<Post>()
     private lateinit var postAdapter: PostAdapter
     private var followList=ArrayList<User>()
@@ -46,6 +53,11 @@ class HomeFragment : Fragment() {
         postAdapter= PostAdapter(requireContext(), postList)
         binding.postRv.layoutManager=LinearLayoutManager(requireContext())
         binding.postRv.adapter=postAdapter
+        binding.postRv.apply {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(this.context)
+
+        }
 
         followAdapter = FollowAdapter(requireContext(), followList)
         binding.folowRv.layoutManager=LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -65,17 +77,38 @@ class HomeFragment : Fragment() {
             followAdapter.notifyDataSetChanged()
         }
 
-
-        Firebase.firestore.collection(POST).get().addOnSuccessListener {
-            var tempList= arrayListOf<Post>()
-            postList.clear()
-            for (i in it.documents){
-                var post:Post= i.toObject<Post>()!!
-                tempList.add(post)
+        mDbRef = FirebaseDatabase.getInstance().getReference(POST)
+        mDbRef.orderByKey().limitToLast(1000).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                postList.clear()
+                if (snapshot.exists()){
+                    for (i in snapshot.children){
+                        val posts = i.getValue(Post::class.java)
+                        postList.add(posts!!)
+                    }
+                }
+                postList.reverse()
+                postAdapter= PostAdapter(binding.root.context, postList)
+                binding.postRv.adapter=postAdapter
             }
-            postList.addAll(tempList)
-            postAdapter.notifyDataSetChanged()
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "ERROR: $error", Toast.LENGTH_LONG).show()
+            }
+
+        })
+
+
+//        Firebase.firestore.collection(POST).get().addOnSuccessListener {
+//            var tempList= arrayListOf<Post>()
+//            postList.clear()
+//            for (i in it.documents){
+//                var post:Post= i.toObject<Post>()!!
+//                tempList.add(post)
+//            }
+//            postList.addAll(tempList)
+//            postAdapter.notifyDataSetChanged()
+//        }
         binding.materialToolbar2.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.message -> {
@@ -93,6 +126,7 @@ class HomeFragment : Fragment() {
                 else -> false // Trả về false để báo rằng sự kiện chưa được xử lý
             }
         }
+
 
 
         return binding.root

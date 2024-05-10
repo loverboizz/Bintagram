@@ -5,4 +5,6 @@
     <color name="pink">#C13584</color>
     <color name="blue">#1E88E5</color>
     <color name="green">#008000</color>
+    <color name="red">#FF0000</color>
+    <color name="grey">#80827D</color>
 </resources>

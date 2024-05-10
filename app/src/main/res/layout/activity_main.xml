@@ -15,17 +15,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.42"
-        android:src="@drawable/instagram"/>
+        android:src="@drawable/lg"/>
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
-        android:drawableLeft="@drawable/logo"
+        android:drawableLeft="@drawable/logo2"
         android:drawablePadding="5dp"
         android:textSize="24sp"
-        android:textColor="@color/pink"
+        android:textColor="@color/blue"
         android:text="Loverboizz"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
