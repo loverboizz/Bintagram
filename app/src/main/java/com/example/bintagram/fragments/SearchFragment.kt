@@ -1,19 +1,21 @@
 package com.example.bintagram.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bintagram.Models.User
-import com.example.bintagram.R
 import com.example.bintagram.adapters.SearchAdapter
 import com.example.bintagram.databinding.FragmentSearchBinding
 import com.example.bintagram.utils.USER_NODE
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import java.text.Normalizer
 import java.util.regex.Pattern
@@ -21,6 +23,7 @@ import java.util.regex.Pattern
 class SearchFragment : Fragment() {
     lateinit var binding: FragmentSearchBinding
     lateinit var adapter: SearchAdapter
+    lateinit var mDbRef: DatabaseReference
     var userList= ArrayList<User>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,45 +40,86 @@ class SearchFragment : Fragment() {
         adapter= SearchAdapter(requireContext(),userList)
         binding.rv.adapter=adapter
 
-        Firebase.firestore.collection(USER_NODE).get().addOnSuccessListener {
-            var tempList = ArrayList<User>()
-            userList.clear()
-            for (i in it.documents){
-                if (i.id.toString().equals(Firebase.auth.currentUser!!.uid.toString())){
+        mDbRef = FirebaseDatabase.getInstance().getReference()
 
+        mDbRef.child(USER_NODE).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                userList.clear()
+                for (i in snapshot.children){
+                    val users = i.getValue(User::class.java)!!
+                    if (Firebase.auth.currentUser?.uid != users.uid){
+                        userList.add(users)
+                    }
                 }
-                else{
-                    var user:User = i.toObject<User>()!!
-                    tempList.add(user)
-                }
-
-
+                adapter.notifyDataSetChanged()
             }
-            userList.addAll(tempList)
-            adapter.notifyDataSetChanged()
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+
+//        Firebase.firestore.collection(USER_NODE).get().addOnSuccessListener {
+//            var tempList = ArrayList<User>()
+//            userList.clear()
+//            for (i in it.documents){
+//                if (i.id.toString().equals(Firebase.auth.currentUser!!.uid.toString())){
+//
+//                }
+//                else{
+//                    var user:User = i.toObject<User>()!!
+//                    tempList.add(user)
+//                }
+//
+//
+//            }
+//            userList.addAll(tempList)
+//            adapter.notifyDataSetChanged()
+//        }
+
+
+
+
         binding.searchButton.setOnClickListener{
             var text= binding.searchView.text.toString()
 
             val searchText = removeDiacritics(text).toLowerCase().trim()
 
-            Firebase.firestore.collection(USER_NODE)
-                .get()
-                .addOnSuccessListener { querySnapshot ->
-                    var tempList = ArrayList<User>()
-                    userList.clear()
+//            Firebase.firestore.collection(USER_NODE).get().addOnSuccessListener { querySnapshot ->
+//                    var tempList = ArrayList<User>()
+//                    userList.clear()
+//
+//                    querySnapshot.forEach { document ->
+//                        val name = removeDiacritics(document.getString("name") ?: "").toLowerCase()
+//                        if (name.contains(searchText)) {
+//                            val user: User = document.toObject<User>()
+//                            tempList.add(user)
+//                        }
+//                    }
+//
+//                    userList.addAll(tempList)
+//                    adapter.notifyDataSetChanged()
+//            }
 
-                    querySnapshot.forEach { document ->
-                        val name = removeDiacritics(document.getString("name") ?: "").toLowerCase()
-                        if (name.contains(searchText)) {
-                            val user: User = document.toObject<User>()
-                            tempList.add(user)
+            mDbRef.child(USER_NODE).addValueEventListener(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    userList.clear()
+                    for (i in snapshot.children){
+                        val users = i.getValue(User::class.java)!!
+                        val name = removeDiacritics(users.name!!).toLowerCase().trim()
+                        if (name.contains(searchText)){
+                            userList.add(users)
                         }
                     }
-
-                    userList.addAll(tempList)
                     adapter.notifyDataSetChanged()
                 }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
 
         }
 

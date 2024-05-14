@@ -5,19 +5,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bintagram.HomeActivity
 import com.example.bintagram.Models.Reel
-import com.example.bintagram.Models.User
+import com.example.bintagram.activity.HomeActivity
 import com.example.bintagram.databinding.ActivityReelBinding
 import com.example.bintagram.utils.REEL
 import com.example.bintagram.utils.REEL_FOLDER
-import com.example.bintagram.utils.USER_NODE
 import com.example.bintagram.utils.uploadVideo
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 
 class ReelActivity : AppCompatActivity() {
@@ -56,44 +52,16 @@ class ReelActivity : AppCompatActivity() {
         mDbRef= FirebaseDatabase.getInstance().getReference()
 
         binding.postButton.setOnClickListener{
-            Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
-                var user: User =it.toObject<User>()!!
-//                val imageUrl: String? = if (user?.image != null) {
-//                    user.image
-//                } else {
-//                    val defaultImageResourceId = R.drawable.avatarr
-//                    // Chuyển đổi ID của hình ảnh mặc định sang URL chuẩn
-//                    "android.resource://com.example.bintagram/${R.drawable.avatarr}"
-//                }
-
-                val reel: Reel = Reel(reelId = mDbRef.push().key!!,
-                    reelUrl = videoUrl,
-                    caption=binding.caption.editText?.text.toString(),
-                    uid = Firebase.auth.currentUser!!.uid)
+            val reel: Reel = Reel(reelId = mDbRef.push().key!!,
+                reelUrl = videoUrl,
+                caption=binding.caption.editText?.text.toString(),
+                uid = Firebase.auth.currentUser!!.uid)
 
 
-
-                Firebase.firestore.collection(REEL).document().set(reel).addOnSuccessListener {
-                    startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
-                    finish()
-                }
-
-                mDbRef.child(REEL).child(reel.reelId).setValue(reel).addOnSuccessListener {
-                    Firebase.firestore.collection(reel.uid+ REEL).document().set(reel).addOnSuccessListener {
-                        startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
-                        finish()
-                    }
-                }
+            mDbRef.child(REEL).child(reel.reelId).setValue(reel).addOnSuccessListener {
+                startActivity(Intent(this@ReelActivity, HomeActivity::class.java))
+                finish()
             }
-//            val reel: Reel = Reel(reelId = mDbRef.push().key!!,
-//                reelUrl = videoUrl,
-//                caption=binding.caption.editText?.text.toString(),
-//                uid = Firebase.auth.currentUser!!.uid)
-//            mDbRef.child(REEL).child(reel.reelId).setValue(reel).addOnSuccessListener {
-//                startActivity(Intent(this@ReelActivity,HomeActivity::class.java))
-//                finish()
-//            }
-
         }
     }
 }

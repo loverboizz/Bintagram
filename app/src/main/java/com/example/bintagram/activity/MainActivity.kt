@@ -1,10 +1,11 @@
-package com.example.bintagram
+package com.example.bintagram.activity
 import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import com.example.bintagram.R
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
@@ -15,9 +16,9 @@ class MainActivity : AppCompatActivity() {
         window.statusBarColor= Color.TRANSPARENT
         Handler(Looper.getMainLooper()).postDelayed({
             if (FirebaseAuth.getInstance().currentUser==null)
-                startActivities((arrayOf(Intent(this,SignUpActivity::class.java))))
+                startActivities((arrayOf(Intent(this, SignUpActivity::class.java))))
             else
-                startActivities((arrayOf(Intent(this,HomeActivity::class.java))))
+                startActivities((arrayOf(Intent(this, HomeActivity::class.java))))
             finish()
         }, 3000)
     }

@@ -32,6 +32,11 @@ class MyReelFragment : Fragment() {
         var adapter = MyReelAdapter(requireContext(),reelList)
         binding.rv.layoutManager= StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
         binding.rv.adapter=adapter
+
+
+
+
+
         Firebase.firestore.collection(Firebase.auth.currentUser!!.uid+ REEL).get().addOnSuccessListener {
             var tempList= arrayListOf<Reel>()
             for (i in it.documents){

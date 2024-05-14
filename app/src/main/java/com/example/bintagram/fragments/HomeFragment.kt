@@ -11,11 +11,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.bintagram.ChatActivity
 import com.example.bintagram.Models.Post
 import com.example.bintagram.Models.User
-import com.example.bintagram.NotificationActivity
 import com.example.bintagram.R
+import com.example.bintagram.activity.ChatActivity
+import com.example.bintagram.activity.NotificationActivity
 import com.example.bintagram.adapters.FollowAdapter
 import com.example.bintagram.adapters.PostAdapter
 import com.example.bintagram.databinding.FragmentHomeBinding
@@ -28,11 +28,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
 
+@Suppress("DEPRECATION")
 class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var mDbRef: DatabaseReference
@@ -66,19 +65,28 @@ class HomeFragment : Fragment() {
         setHasOptionsMenu(true)
         (requireActivity() as AppCompatActivity).setSupportActionBar(binding.materialToolbar2)
 
-        Firebase.firestore.collection(Firebase.auth.currentUser!!.uid+ FOLLOW).get().addOnSuccessListener {
-            var tempList= arrayListOf<User>()
-            followList.clear()
-            for (i in it.documents){
-                var user:User=i.toObject<User>()!!
-                tempList.add(user)
-            }
-            followList.addAll(tempList)
-            followAdapter.notifyDataSetChanged()
-        }
+        mDbRef = FirebaseDatabase.getInstance().getReference()
 
-        mDbRef = FirebaseDatabase.getInstance().getReference(POST)
-        mDbRef.orderByKey().limitToLast(1000).addValueEventListener(object : ValueEventListener{
+
+        mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                followList.clear()
+                for (i in snapshot.children){
+                    var user = i.getValue(User::class.java)
+                    followList.add(user!!)
+                }
+                followAdapter.notifyDataSetChanged()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
+
+
+
+        mDbRef.child(POST).orderByKey().limitToLast(1000).addValueEventListener(object : ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 postList.clear()
                 if (snapshot.exists()){
@@ -99,16 +107,6 @@ class HomeFragment : Fragment() {
         })
 
 
-//        Firebase.firestore.collection(POST).get().addOnSuccessListener {
-//            var tempList= arrayListOf<Post>()
-//            postList.clear()
-//            for (i in it.documents){
-//                var post:Post= i.toObject<Post>()!!
-//                tempList.add(post)
-//            }
-//            postList.addAll(tempList)
-//            postAdapter.notifyDataSetChanged()
-//        }
         binding.materialToolbar2.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.message -> {
@@ -134,13 +132,21 @@ class HomeFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
-            val user:User = it.toObject<User>()!!
-            if (user.image.isNullOrEmpty()){
-
-            }
-            else{
-                Picasso.get().load(user.image).into(binding.profileImage)
+//        Firebase.firestore.collection(USER_NODE).document(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
+//            val user:User = it.toObject<User>()!!
+//            if (user.image.isNullOrEmpty()){
+//
+//            }
+//            else{
+//                Picasso.get().load(user.image).into(binding.profileImage)
+//            }
+//        }
+        mDbRef.child(USER_NODE).child(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
+            val user = it.getValue(User::class.java)
+            if (user != null) {
+                if (!user.image.isNullOrEmpty()) {
+                    Picasso.get().load(user.image).into(binding.profileImage)
+                }
             }
         }
     }

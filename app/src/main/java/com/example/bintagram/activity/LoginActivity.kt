@@ -1,5 +1,5 @@
 
-package com.example.bintagram
+package com.example.bintagram.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -27,7 +27,7 @@ class  LoginActivity : AppCompatActivity() {
                 Firebase.auth.signInWithEmailAndPassword(user.email!!,user.uid!!)
                     .addOnCompleteListener{
                         if (it.isSuccessful){
-                            startActivity(Intent(this@LoginActivity,HomeActivity::class.java))
+                            startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
                             finish()
                         }else{
                             Toast.makeText(this@LoginActivity, it.exception?.localizedMessage, Toast.LENGTH_SHORT).show()
@@ -37,7 +37,7 @@ class  LoginActivity : AppCompatActivity() {
         }
 
         binding.signUpBtn.setOnClickListener{
-            startActivity(Intent(this@LoginActivity,SignUpActivity::class.java))
+            startActivity(Intent(this@LoginActivity, SignUpActivity::class.java))
             finish()
         }
     }

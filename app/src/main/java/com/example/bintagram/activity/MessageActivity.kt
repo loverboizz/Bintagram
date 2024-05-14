@@ -1,4 +1,4 @@
-package com.example.bintagram
+package com.example.bintagram.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -41,7 +41,7 @@ class MessageActivity : AppCompatActivity() {
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title= ""
         binding.toolbar.setNavigationOnClickListener {
-            startActivity(Intent(this@MessageActivity,ChatActivity::class.java))
+            startActivity(Intent(this@MessageActivity, ChatActivity::class.java))
             finish()
         }
 

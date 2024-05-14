@@ -28,5 +28,9 @@
         android:id="@+id/profile"
         android:name="com.example.bintagram.fragments.ProfileFragment"
         android:label="fragment_profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profile_to_home"
+            app:destination="@id/home" />
+    </fragment>
 </navigation>

@@ -35,13 +35,14 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import com.makeramen.roundedimageview.RoundedImageView
 
 
 class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerView.Adapter<PostAdapter.MyHolder>() {
     inner class MyHolder(var binding: PostRvBinding):RecyclerView.ViewHolder(binding.root)
+
+    private var lastClickedPosition: Int = RecyclerView.NO_POSITION
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
         var binding=PostRvBinding.inflate(LayoutInflater.from(context),parent,false)
@@ -53,18 +54,29 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
         return postList.size
     }
 
+    fun scrollToLastClickedPosition(recyclerView: RecyclerView) {
+        val lastPosition = lastClickedPosition
+        if (lastPosition != RecyclerView.NO_POSITION) {
+            recyclerView.smoothScrollToPosition(lastPosition)
+        }
+    }
+
     override fun onBindViewHolder(holder: MyHolder, position: Int) {
         var isLike = false
         lateinit var mDbRef: DatabaseReference
         mDbRef = FirebaseDatabase.getInstance().getReference()
         var userUid:String? = null
        try {
-            Firebase.firestore.collection(USER_NODE).document(postList.get(position).uid).get().addOnSuccessListener {
-                var user=it.toObject<User>()!!
-                Glide.with(context).load(user!!.image).placeholder(R.drawable.user).into(holder.binding.profileImage)
-                holder.binding.name.text= user.name
-                userUid = user.uid
-            }
+           mDbRef.child(USER_NODE).child(postList.get(position).uid).get().addOnSuccessListener {
+               val user = it.getValue(User::class.java)
+               if (user != null) {
+                   holder.binding.name.text = user.name ?: ""
+                   userUid = user.uid
+                   if (!user.image.isNullOrEmpty()) {
+                       Glide.with(context).load(user!!.image).placeholder(R.drawable.user).into(holder.binding.profileImage)
+                   }
+               }
+           }
         }catch (e: Exception){
 
         }
@@ -115,70 +127,102 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
         }
 
         holder.binding.editMenu.setOnClickListener{
-            val dialog = Dialog(context)
-            dialog.setContentView(R.layout.crud_post)
-
-            val editPost:LinearLayout = dialog.findViewById(R.id.edit_post)
-            val deletePost: LinearLayout = dialog.findViewById(R.id.delete_post)
-
-            editPost.setOnClickListener{
-                val dialogUpdate = Dialog(context)
-                dialogUpdate.setContentView(R.layout.update_post)
-
-                val image : RoundedImageView = dialogUpdate.findViewById(R.id.update_image)
-                val caption : TextInputLayout = dialogUpdate.findViewById(R.id.caption)
-                val updateBtn: Button = dialogUpdate.findViewById(R.id.update_button)
-                Glide.with(context).load(postList.get(position).postUrl).placeholder(R.drawable.loading).into(image)
-                caption.editText!!.setText(postList.get(position).caption)
-
-                updateBtn.setOnClickListener {
-                    val newCaption= caption.editText!!.text.toString()
-                    val post: Post = Post(postList.get(position).postId,
-                        postList.get(position).postUrl,
-                        newCaption,
-                        postList.get(position).uid,
-                        postList.get(position).time)
-
-                    mDbRef.child(POST).child(postList.get(position).postId).setValue(post)
-                        .addOnSuccessListener {
-                            dialogUpdate.dismiss()
-                            dialog.dismiss()
-                            Toast.makeText(context, "Update post successfully!!", Toast.LENGTH_LONG).show()
-                    }.addOnFailureListener {
-                            Toast.makeText(context, "Delete post fail. SomeThing went wrong !!", Toast.LENGTH_LONG).show()
-                        }
-                }
+            if(userUid== Firebase.auth.currentUser!!.uid) {
 
 
+                val dialog = Dialog(context)
+                dialog.setContentView(R.layout.crud_post)
 
-                dialogUpdate.show()
-                dialogUpdate.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                dialogUpdate.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                dialogUpdate.window?.attributes?.windowAnimations = R.style.DialoAnimation
-                dialogUpdate.window?.setGravity(Gravity.BOTTOM)
-                dialog.dismiss()
-            }
-            deletePost.setOnClickListener{
-                MaterialAlertDialogBuilder(context)
-                    .setTitle("Delete the post")
-                    .setMessage("Are you sure you want to delete this post?")
-                    .setPositiveButton("Yes") { dialog, which ->
-                        mDbRef.child(POST).child(postList.get(position).postId).removeValue()
-                            .addOnSuccessListener {
-                                Toast.makeText(context, "Delete post successfully!!", Toast.LENGTH_LONG).show()
-                                dialog.dismiss()
-                            }
-                    }
-                    .setNegativeButton("No") { dialog, which ->
+                val editPost: LinearLayout = dialog.findViewById(R.id.edit_post)
+                val deletePost: LinearLayout = dialog.findViewById(R.id.delete_post)
+
+                editPost.setOnClickListener {
+                    val dialogUpdate = Dialog(context)
+                    dialogUpdate.setContentView(R.layout.update_post)
+
+                    val cancel: Button = dialogUpdate.findViewById(R.id.cancel_button)
+                    val image: RoundedImageView = dialogUpdate.findViewById(R.id.update_image)
+                    val caption: TextInputLayout = dialogUpdate.findViewById(R.id.caption)
+                    val updateBtn: Button = dialogUpdate.findViewById(R.id.update_button)
+                    Glide.with(context).load(postList.get(position).postUrl)
+                        .placeholder(R.drawable.loading).into(image)
+                    caption.editText!!.setText(postList.get(position).caption)
+
+                    cancel.setOnClickListener {
+                        dialogUpdate.dismiss()
                         dialog.dismiss()
                     }
-                    .show()
+
+                    updateBtn.setOnClickListener {
+                        val newCaption = caption.editText!!.text.toString()
+                        val post: Post = Post(
+                            postList.get(position).postId,
+                            postList.get(position).postUrl,
+                            newCaption,
+                            postList.get(position).uid,
+                            postList.get(position).time
+                        )
+
+                        mDbRef.child(POST).child(postList.get(position).postId).setValue(post)
+                            .addOnSuccessListener {
+                                dialogUpdate.dismiss()
+                                dialog.dismiss()
+                                Toast.makeText(
+                                    context,
+                                    "Update post successfully!!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }.addOnFailureListener {
+                                Toast.makeText(
+                                    context,
+                                    "Delete post fail. SomeThing went wrong !!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                    }
+
+
+
+
+                    dialogUpdate.show()
+                    dialogUpdate.window?.setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    dialogUpdate.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    dialogUpdate.window?.attributes?.windowAnimations = R.style.DialoAnimation
+                    dialogUpdate.window?.setGravity(Gravity.BOTTOM)
+                    dialog.dismiss()
+                }
+                deletePost.setOnClickListener {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("Delete the post")
+                        .setMessage("Are you sure you want to delete this post?")
+                        .setPositiveButton("Yes") { dialog, which ->
+                            mDbRef.child(POST).child(postList.get(position).postId).removeValue()
+                                .addOnSuccessListener {
+                                    Toast.makeText(
+                                        context,
+                                        "Delete post successfully!!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    dialog.dismiss()
+                                }
+                        }
+                        .setNegativeButton("No") { dialog, which ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+                dialog.show()
+                dialog.window?.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
+                dialog.window?.setGravity(Gravity.BOTTOM)
             }
-            dialog.show()
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
-            dialog.window?.setGravity(Gravity.BOTTOM)
         }
 
 

@@ -4,17 +4,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.bintagram.HomeActivity
+import com.example.bintagram.activity.HomeActivity
 import com.example.bintagram.Models.Post
 import com.example.bintagram.databinding.ActivityPostBinding
 import com.example.bintagram.utils.POST
 import com.example.bintagram.utils.POST_FOLDER
-import com.example.bintagram.utils.USER_NODE
 import com.example.bintagram.utils.uploadImage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class PostActivity : AppCompatActivity() {
@@ -42,7 +40,7 @@ class PostActivity : AppCompatActivity() {
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
         getSupportActionBar()?.setDisplayShowHomeEnabled(true)
         binding.materialToolbar.setNavigationOnClickListener {
-            startActivity(Intent(this@PostActivity,HomeActivity::class.java))
+            startActivity(Intent(this@PostActivity, HomeActivity::class.java))
             finish()
         }
 
@@ -51,27 +49,25 @@ class PostActivity : AppCompatActivity() {
         }
 
         binding.cancelButton.setOnClickListener{
-            startActivity(Intent(this@PostActivity,HomeActivity::class.java))
+            startActivity(Intent(this@PostActivity, HomeActivity::class.java))
             finish()
         }
 
         mDbRef= FirebaseDatabase.getInstance().getReference()
 
         binding.postButton.setOnClickListener{
-            Firebase.firestore.collection(USER_NODE).document().get().addOnSuccessListener {
-                val post:Post= Post(postId = mDbRef.push().key!!,
-                    postUrl =imageUrl!!,
-                    caption = binding.caption.editText?.text.toString(),
-                    uid = Firebase.auth.currentUser!!.uid,
-                    time= System.currentTimeMillis().toString())
+            val post:Post= Post(postId = mDbRef.push().key!!,
+                postUrl =imageUrl!!,
+                caption = binding.caption.editText?.text.toString(),
+                uid = Firebase.auth.currentUser!!.uid,
+                time= System.currentTimeMillis().toString())
 
 
-                mDbRef.child(POST).child(post.postId).setValue(post).addOnSuccessListener {
-                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener{
-                        startActivity(Intent(this@PostActivity,HomeActivity::class.java))
-                        finish()
-                    }
-                }
+            mDbRef.child(POST).child(post.postId).setValue(post).addOnSuccessListener {
+                startActivity(Intent(this@PostActivity, HomeActivity::class.java))
+                finish()
+
+            }
 //                Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
 //                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener {
 //                        startActivity(Intent(this@PostActivity,HomeActivity::class.java))
@@ -79,7 +75,7 @@ class PostActivity : AppCompatActivity() {
 //                    }
 //                }
 
-            }
+
 
         }
     }

@@ -1,13 +1,11 @@
-package com.example.bintagram
+package com.example.bintagram.activity
 
-import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Html
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.bintagram.Models.User
 import com.example.bintagram.databinding.ActivitySignUpBinding
 import com.example.bintagram.utils.USER_NODE
@@ -17,8 +15,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ktx.database
-import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -37,6 +33,8 @@ class SignUpActivity : AppCompatActivity() {
                 if (it!=null){
                     user.image=it
                     binding.profileImage.setImageURI(uri)
+                }else{
+                    user.image=""
                 }
             }
         }
@@ -99,9 +97,10 @@ class SignUpActivity : AppCompatActivity() {
 
                         if (result.isSuccessful) {
                             user.name = binding.name.editText?.text.toString()
-                            user.status = "default"
+                            user.caption = ""
                             user.email = binding.email.editText?.text.toString()
                             user.uid = Firebase.auth.currentUser!!.uid
+
                             Firebase.firestore.collection(USER_NODE)
                                 .document(Firebase.auth.currentUser!!.uid).set(user)
                                 .addOnSuccessListener {
@@ -113,12 +112,6 @@ class SignUpActivity : AppCompatActivity() {
                                     )
                                     finish()
                                 }
-                            Firebase.auth.currentUser!!.sendEmailVerification()
-                                .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    Log.d("verify", "Email sent.")
-                                }
-                            }
                             mDbRef= FirebaseDatabase.getInstance().getReference()
                             mDbRef.child(USER_NODE).child(Firebase.auth.currentUser!!.uid).setValue(user)
 
@@ -139,7 +132,7 @@ class SignUpActivity : AppCompatActivity() {
         }
         binding.login.setOnClickListener{
             FirebaseAuth.getInstance().signOut()
-            startActivity(Intent(this@SignUpActivity,LoginActivity::class.java))
+            startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
             finish()
         }
     }

@@ -5,7 +5,7 @@ class User {
     var name:String?=null
     var email:String?=null
     var uid:String?=null
-    var status:String?=null
+    var caption:String?=null
     constructor()
 
     constructor(image: String?, name: String?, email: String?, uid: String?) {
@@ -26,12 +26,12 @@ class User {
         this.uid = uid
     }
 
-    constructor(image: String?, name: String?, email: String?, uid: String?, status: String?) {
+    constructor(image: String?, name: String?, email: String?, uid: String?, caption: String?) {
         this.image = image
         this.name = name
         this.email = email
         this.uid = uid
-        this.status = status
+        this.caption = caption
     }
 
 

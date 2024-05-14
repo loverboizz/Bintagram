@@ -9,7 +9,7 @@
     android:padding="10dp"
     android:background="@drawable/dialog_bg">
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/comment"
+        android:id="@+id/s"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:orientation="vertical"
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/linearLayout"
-        android:layout_below="@+id/comment"
+        android:layout_below="@+id/s"
         android:orientation="vertical">
 
         <androidx.recyclerview.widget.RecyclerView
