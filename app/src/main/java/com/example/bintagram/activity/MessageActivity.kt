@@ -52,16 +52,28 @@ class MessageActivity : AppCompatActivity() {
         senderRoom= receiverUid + senderUid
         receiverRoom =senderUid+ receiverUid
 
-        Firebase.firestore.collection(USER_NODE).document(receiverUid!!).get().addOnSuccessListener {
-            val user: User = it.toObject<User>()!!
+
+        mDbRef.child(USER_NODE).child(receiverUid!!).get().addOnSuccessListener {
+            val user = it.getValue(User::class.java)!!
             binding.name.text = user.name
-            if (user.image.isNullOrEmpty()){
+            if(user.image.isNullOrEmpty()){
 
             }
             else{
                 Picasso.get().load(user.image).into(binding.profileImage)
             }
         }
+
+//        Firebase.firestore.collection(USER_NODE).document(receiverUid!!).get().addOnSuccessListener {
+//            val user: User = it.toObject<User>()!!
+//            binding.name.text = user.name
+//            if(user.image.isNullOrEmpty()){
+//
+//            }
+//            else{
+//                Picasso.get().load(user.image).into(binding.profileImage)
+//            }
+//        }
 
         messageList = ArrayList()
         messageAdapter = MessageAdapter(this, messageList)
@@ -92,14 +104,18 @@ class MessageActivity : AppCompatActivity() {
 
         binding.sendButton.setOnClickListener {
 
+
             val message = binding.messageBox.text.toString()
-            val messageObject = Message(message, senderUid)
-            mDbRef.child(CHAT).child(senderRoom!!).child("messages").push()
-                .setValue(messageObject).addOnSuccessListener {
-                    mDbRef.child(CHAT).child(receiverRoom!!).child("messages").push()
-                        .setValue(messageObject)
-                }
-            binding.messageBox.setText("")
+            if (message!=""){
+                val messageObject = Message(message, senderUid)
+                mDbRef.child(CHAT).child(senderRoom!!).child("messages").push()
+                    .setValue(messageObject).addOnSuccessListener {
+                        mDbRef.child(CHAT).child(receiverRoom!!).child("messages").push()
+                            .setValue(messageObject)
+                    }
+                binding.messageBox.setText("")
+            }
+
         }
 
 

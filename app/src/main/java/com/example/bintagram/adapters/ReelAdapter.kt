@@ -22,6 +22,7 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.databinding.ReelDgBinding
 import com.example.bintagram.utils.COMMENT
+import com.example.bintagram.utils.LIKE
 import com.example.bintagram.utils.POST
 import com.example.bintagram.utils.REEL
 import com.example.bintagram.utils.USER_NODE
@@ -113,6 +114,52 @@ class ReelAdapter(var context:Context, var reelList: ArrayList<Reel>) : Recycler
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
             dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+
+
+        mDbRef.child(LIKE).child(reelList.get(position).reelId).child(Firebase.auth.currentUser!!.uid)
+            .addListenerForSingleValueEvent(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val isLiked = snapshot.exists()
+                    if (isLiked){
+
+                        holder.binding.like.setImageResource(R.drawable.redheart)
+
+                    }else{
+                        holder.binding.like.setImageResource(R.drawable.heart)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+
+        holder.binding.like.setOnClickListener {
+            mDbRef.child(LIKE).child(reelList.get(position).reelId).child(Firebase.auth.currentUser!!.uid)
+                .addListenerForSingleValueEvent(object : ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val isLike = snapshot.exists()
+                        if (isLike){
+                            snapshot.ref.removeValue()
+                            holder.binding.like.setImageResource(R.drawable.heart)
+                        }else{
+                            mDbRef.child(USER_NODE).child(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
+                                val user = it.getValue(User::class.java)!!
+                                snapshot.ref.setValue(user)
+                                holder.binding.like.setImageResource(R.drawable.redheart)
+                            }
+
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
+
+                })
         }
 
 

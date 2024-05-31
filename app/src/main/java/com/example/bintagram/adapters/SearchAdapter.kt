@@ -1,9 +1,11 @@
 package com.example.bintagram.adapters
 
+import ViewProfile
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,6 +22,8 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 
 class SearchAdapter (var context: Context, var userList: ArrayList<User>): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
+
+
     inner class ViewHolder(var binding: SearchRvBinding): RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -85,5 +89,11 @@ class SearchAdapter (var context: Context, var userList: ArrayList<User>): Recyc
 
                 })
         }
+
+        holder.binding.userItem.setOnClickListener{
+            val dialogFragment = ViewProfile.newInstance(userList.get(position).uid!!)
+            dialogFragment.show((context as AppCompatActivity).supportFragmentManager, "ViewProfile")
+        }
     }
 }
+

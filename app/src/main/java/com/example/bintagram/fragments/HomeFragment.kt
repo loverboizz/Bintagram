@@ -1,3 +1,4 @@
+
 package com.example.bintagram.fragments
 
 import android.content.Intent
@@ -66,6 +67,16 @@ class HomeFragment : Fragment() {
         (requireActivity() as AppCompatActivity).setSupportActionBar(binding.materialToolbar2)
 
         mDbRef = FirebaseDatabase.getInstance().getReference()
+
+//        mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
+//            followList.clear()
+//            for (i in it.children){
+//                val uid = i.key!!
+//                followList.add(uid)
+//
+//            }
+//            followAdapter.notifyDataSetChanged()
+//        }
 
 
         mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).addValueEventListener(object : ValueEventListener{

@@ -43,8 +43,8 @@ class ProfileFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewPagerAdapter =ViewPagerAdapter(requireActivity().supportFragmentManager)
-        viewPagerAdapter.addFragments(MyPostFragment(), "My Post")
-        viewPagerAdapter.addFragments(MyReelFragment(), "My Reel")
+        viewPagerAdapter.addFragments(MyPostFragment(Firebase.auth.currentUser!!.uid), "My Post")
+        viewPagerAdapter.addFragments(MyReelFragment(Firebase.auth.currentUser!!.uid), "My Reel")
         binding.viewPager.adapter=viewPagerAdapter
         binding.tabLayout.setupWithViewPager(binding.viewPager)
     }
@@ -176,10 +176,6 @@ class ProfileFragment : Fragment() {
                                     currentUser.updatePassword(NewPw)
                                         .addOnCompleteListener { task2 ->
                                             if (task2.isSuccessful) {
-                                                user.uid = NewPw
-                                                mDbRef.child(USER_NODE)
-                                                    .child(Firebase.auth.currentUser!!.uid)
-                                                    .setValue(user)
                                                 dialog2.dismiss()
                                                 Toast.makeText(
                                                     context,
@@ -230,8 +226,8 @@ class ProfileFragment : Fragment() {
         }
 
         viewPagerAdapter =ViewPagerAdapter(requireActivity().supportFragmentManager)
-        viewPagerAdapter.addFragments(MyPostFragment(), "My Post")
-        viewPagerAdapter.addFragments(MyReelFragment(), "My Reel")
+        viewPagerAdapter.addFragments(MyPostFragment(Firebase.auth.currentUser!!.uid), "My Post")
+        viewPagerAdapter.addFragments(MyReelFragment(Firebase.auth.currentUser!!.uid), "My Reel")
         binding.viewPager.adapter=viewPagerAdapter
         binding.tabLayout.setupWithViewPager(binding.viewPager)
         return binding.root
@@ -255,5 +251,7 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+
 
 }

@@ -13,11 +13,6 @@
         android:theme="@style/Theme.Bintagram"
         tools:targetApi="31" >
         <activity
-            android:name=".activity.ViewPostActivity"
-            android:exported="false"
-            android:label="@string/title_activity_view_post"
-            android:theme="@style/Theme.Bintagram" />
-        <activity
             android:name=".activity.MessageActivity"
             android:exported="false" />
         <activity

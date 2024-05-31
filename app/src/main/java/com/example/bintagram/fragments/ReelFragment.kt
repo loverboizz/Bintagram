@@ -38,18 +38,6 @@ class ReelFragment : Fragment() {
         binding.viewPager.adapter= reelAdapter
 
 
-//        Firebase.firestore.collection(REEL).get().addOnSuccessListener {
-//
-//            var tempList= ArrayList<Reel>()
-//            reelList.clear()
-//            for (i in it.documents){
-//                var reel = i.toObject<Reel>()!!
-//                tempList.add(reel)
-//            }
-//            reelList.addAll(tempList)
-//            reelList.reverse()
-//            reelAdapter.notifyDataSetChanged()
-//        }
         mDbRef = FirebaseDatabase.getInstance().getReference()
         mDbRef.child(REEL).orderByKey().limitToLast(1000).addValueEventListener(object :
             ValueEventListener {

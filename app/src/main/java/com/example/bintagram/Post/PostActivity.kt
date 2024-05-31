@@ -68,12 +68,6 @@ class PostActivity : AppCompatActivity() {
                 finish()
 
             }
-//                Firebase.firestore.collection(POST).document().set(post).addOnSuccessListener {
-//                    Firebase.firestore.collection(Firebase.auth.currentUser!!.uid).document().set(post).addOnSuccessListener {
-//                        startActivity(Intent(this@PostActivity,HomeActivity::class.java))
-//                        finish()
-//                    }
-//                }
 
 
 

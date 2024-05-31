@@ -97,7 +97,6 @@
                 app:layout_constraintTop_toTopOf="@+id/like" />
 
 
-
             <ImageView
                 android:id="@+id/share"
                 android:layout_width="28dp"
@@ -117,7 +116,15 @@
                 android:src="@drawable/save"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/n_like"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
 
 
     </LinearLayout>
