@@ -86,21 +86,6 @@ class SearchFragment : Fragment() {
 
             val searchText = removeDiacritics(text).toLowerCase().trim()
 
-//            Firebase.firestore.collection(USER_NODE).get().addOnSuccessListener { querySnapshot ->
-//                    var tempList = ArrayList<User>()
-//                    userList.clear()
-//
-//                    querySnapshot.forEach { document ->
-//                        val name = removeDiacritics(document.getString("name") ?: "").toLowerCase()
-//                        if (name.contains(searchText)) {
-//                            val user: User = document.toObject<User>()
-//                            tempList.add(user)
-//                        }
-//                    }
-//
-//                    userList.addAll(tempList)
-//                    adapter.notifyDataSetChanged()
-//            }
 
             mDbRef.child(USER_NODE).addValueEventListener(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {

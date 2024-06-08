@@ -5,7 +5,9 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.text.Html
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +17,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -25,9 +27,9 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.databinding.PostRvBinding
 import com.example.bintagram.utils.COMMENT
-import com.example.bintagram.utils.FOLLOW
 import com.example.bintagram.utils.LIKE
 import com.example.bintagram.utils.POST
+import com.example.bintagram.utils.SAVE
 import com.example.bintagram.utils.USER_NODE
 import com.github.marlonlom.utilities.timeago.TimeAgo
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -42,10 +44,12 @@ import com.google.firebase.ktx.Firebase
 import com.makeramen.roundedimageview.RoundedImageView
 
 
-class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerView.Adapter<PostAdapter.MyHolder>() {
+class PostAdapter(var context: Context, var postList: ArrayList<Post>): RecyclerView.Adapter<PostAdapter.MyHolder>() {
     inner class MyHolder(var binding: PostRvBinding):RecyclerView.ViewHolder(binding.root)
 
     private var lastClickedPosition: Int = RecyclerView.NO_POSITION
+    private var likeList= ArrayList<User>()
+    private lateinit var likeAdapter : SearchAdapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyHolder {
         var binding=PostRvBinding.inflate(LayoutInflater.from(context),parent,false)
@@ -73,6 +77,13 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
             val user = it.getValue(User::class.java)!!
             holder.binding.name.text = user.name ?: ""
             userUid = user.uid
+
+            val htmlText ="<b>${user.name}</b> ${postList.get(position).caption}"
+            if (postList.get(position).caption!=""){
+                holder.binding.caption.text= Html.fromHtml(htmlText, Html.FROM_HTML_MODE_LEGACY)
+            }else{
+                holder.binding.caption.visibility = View.GONE
+            }
             if (!user.image.isNullOrEmpty()) {
                 Glide.with(context).load(user.image).placeholder(R.drawable.user).into(holder.binding.profileImage)
             }
@@ -86,7 +97,8 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
         }catch (e : Exception){
             holder.binding.time.text=""
         }
-        holder.binding.caption.text=postList.get(position).caption
+
+
 
         holder.binding.share.setOnClickListener{
             var i = Intent(android.content.Intent.ACTION_SEND)
@@ -100,14 +112,16 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
             mDbRef.child(LIKE).child(postId).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val likeCount = snapshot.childrenCount.toString()
+                    holder.binding.nLike.setTypeface(holder.binding.nLike.typeface, Typeface.BOLD)
                     if (likeCount.equals("0")){
                         holder.binding.nLike.visibility =View.GONE
                     }else if(likeCount.equals("1")){
+                        holder.binding.nLike.visibility = View.VISIBLE
                         holder.binding.nLike.text = "1 like"
                     }else{
                         holder.binding.nLike.text = "$likeCount likes"// Update your UI element
                     }
-                    
+
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -115,6 +129,121 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
                 }
             })
         }
+
+        fun getCommentCount(postId: String, holder: MyHolder) {
+            mDbRef.child(COMMENT).child(postId).addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val commentCount = snapshot.childrenCount.toString()
+                    if (commentCount.equals("0")){
+                        holder.binding.nComment.visibility =View.GONE
+                    }else if(commentCount.equals("1")){
+                        holder.binding.nComment.text = "1 comment"
+                    }else{
+                        holder.binding.nComment.text = "See all $commentCount comments"// Update your UI element
+                    }
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle possible errors
+                }
+            })
+        }
+
+        fun likeBtn() {
+            val dialog = Dialog(context)
+            dialog.setContentView(R.layout.like_user)
+            val likeRecyclerView: RecyclerView = dialog.findViewById(R.id.likeRecyclerView)
+            val likeList = ArrayList<User>()
+            val likeAdapter: SearchAdapter
+            likeAdapter = SearchAdapter(context, likeList)
+            likeRecyclerView.layoutManager= LinearLayoutManager(context)
+            likeRecyclerView.adapter =likeAdapter
+
+            mDbRef.child(LIKE).child(postList.get(position).postId).addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    likeList.clear()
+                    for(userSnapshot in snapshot.children){
+
+                        val user= userSnapshot.getValue(User::class.java)!!
+                        if(Firebase.auth.currentUser!!.uid != user.uid){
+                            likeList.add(user)
+                        }
+
+
+                    }
+                    likeAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+            dialog.show()
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
+            dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+
+
+
+
+        fun commentBtn(id : Int) {
+            val dialog = Dialog(context)
+            dialog.setContentView(R.layout.comment)
+            val commentRecyclerView: RecyclerView = dialog.findViewById(R.id.commentRecyclerView)
+            val commentList = ArrayList<Comment>()
+            val commentAdapter: CommentAdapter
+            commentAdapter = CommentAdapter(context, commentList)
+            commentRecyclerView.layoutManager= LinearLayoutManager(context)
+            commentRecyclerView.adapter =commentAdapter
+
+            mDbRef.child(COMMENT).child(postList.get(position).postId).addValueEventListener(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    commentList.clear()
+                    for(postSnapshot in snapshot.children){
+
+                        val comment= postSnapshot.getValue(Comment::class.java)
+                        commentList.add(comment!!)
+
+                    }
+                    commentAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+            val commentText: EditText= dialog.findViewById(R.id.commentBox)
+            val commentBtn: ImageView = dialog.findViewById(R.id.send_button)
+
+            commentBtn.setOnClickListener {
+                val commentObject = Comment(commentText.text.toString() ,Firebase.auth.currentUser!!.uid)
+                mDbRef.child(COMMENT).child(postList.get(position).postId)
+                    .push().setValue(commentObject).addOnSuccessListener {
+                        getCommentCount(postList.get(position).postId, holder)
+                        commentText.setText("")
+                    }
+
+            }
+
+            dialog.show()
+            if (id==0){
+                dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, 1000)
+            }else{
+                dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
+            dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+
+        getCommentCount(postList.get(position).postId, holder)
 
         mDbRef.child(LIKE).child(postList.get(position).postId).child(Firebase.auth.currentUser!!.uid)
             .addListenerForSingleValueEvent(object :ValueEventListener{
@@ -163,6 +292,7 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
 
                 })
         }
+
 
 
 
@@ -268,25 +398,37 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
 
 
         holder.binding.comment.setOnClickListener {
-            val dialog = Dialog(context)
-            dialog.setContentView(R.layout.comment)
-            var commentRecyclerView: RecyclerView = dialog.findViewById(R.id.commentRecyclerView)
-            var commentList = ArrayList<Comment>()
-            var commentAdapter: CommentAdapter
-            commentAdapter = CommentAdapter(context, commentList)
-            commentRecyclerView.layoutManager= LinearLayoutManager(context)
-            commentRecyclerView.adapter =commentAdapter
 
-            mDbRef.child(COMMENT).child(postList.get(position).postId).addValueEventListener(object : ValueEventListener{
+            commentBtn(0)
+        }
+        holder.binding.nComment.setOnClickListener {
+            commentBtn(1)
+        }
+
+        holder.binding.profileImage.setOnClickListener{
+            if (userUid.equals(Firebase.auth.currentUser!!.uid)){
+            }else{
+                val dialogFragment = ViewProfile.newInstance(userUid!!)
+                dialogFragment.show((context as AppCompatActivity).supportFragmentManager, "ViewProfile")
+            }
+        }
+
+        holder.binding.nLike.setOnClickListener {
+            likeBtn()
+        }
+
+
+        mDbRef.child(SAVE).child(Firebase.auth.currentUser!!.uid).child(postList.get(position).postId)
+            .addListenerForSingleValueEvent(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    commentList.clear()
-                    for(postSnapshot in snapshot.children){
+                    val isLiked = snapshot.exists()
+                    if (isLiked){
 
-                        val comment= postSnapshot.getValue(Comment::class.java)
-                        commentList.add(comment!!)
+                        holder.binding.save.setImageResource(R.drawable.bookmark)
 
+                    }else{
+                        holder.binding.save.setImageResource(R.drawable.save)
                     }
-                    commentAdapter.notifyDataSetChanged()
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -295,24 +437,33 @@ class PostAdapter(var context: Context,var postList: ArrayList<Post>): RecyclerV
 
             })
 
-            val commentText: EditText= dialog.findViewById(R.id.commentBox)
-            val commentBtn: ImageView = dialog.findViewById(R.id.send_button)
 
-            commentBtn.setOnClickListener {
-                val commentObject = Comment(commentText.text.toString() ,userUid)
-                mDbRef.child(COMMENT).child(postList.get(position).postId)
-                    .push().setValue(commentObject).addOnSuccessListener {
-                        commentText.setText("")
+        holder.binding.save.setOnClickListener {
+            mDbRef.child(SAVE).child(Firebase.auth.currentUser!!.uid).child(postList.get(position).postId)
+                .addListenerForSingleValueEvent(object : ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val isLike = snapshot.exists()
+                        if (isLike){
+                            snapshot.ref.removeValue()
+                            holder.binding.save.setImageResource(R.drawable.save)
+                        }else{
+                            mDbRef.child(POST).child(postList.get(position).postId).get().addOnSuccessListener {
+                                val post = it.getValue(Post::class.java)!!
+                                snapshot.ref.setValue(post)
+                                holder.binding.save.setImageResource(R.drawable.bookmark)
+                            }
+
+                        }
                     }
 
-            }
+                    override fun onCancelled(error: DatabaseError) {
+                        TODO("Not yet implemented")
+                    }
 
-            dialog.show()
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
-            dialog.window?.setGravity(Gravity.BOTTOM)
+                })
         }
+
+
 
 
 

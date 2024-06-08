@@ -9,6 +9,7 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.adapters.FollowAdapter
 import com.example.bintagram.adapters.MessageUserAdapter
 import com.example.bintagram.databinding.ActivityChatBinding
+import com.example.bintagram.utils.CHAT
 import com.example.bintagram.utils.FOLLOW
 import com.example.bintagram.utils.USER_NODE
 import com.google.firebase.auth.ktx.auth
@@ -43,6 +44,9 @@ class ChatActivity : AppCompatActivity() {
         userAdapter = MessageUserAdapter(this, userMessageList)
         binding.userRv.layoutManager = LinearLayoutManager(this)
         binding.userRv.adapter = userAdapter
+
+
+
 
 
         followAdapter = FollowAdapter(this, followList)
@@ -111,6 +115,7 @@ class ChatActivity : AppCompatActivity() {
             }
 
         })
+
 
     }
 }

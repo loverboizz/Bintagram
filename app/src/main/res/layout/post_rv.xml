@@ -66,11 +66,6 @@
             android:layout_height="wrap_content"
             android:src="@drawable/loading" />
 
-        <TextView
-            android:id="@+id/caption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -108,7 +103,7 @@
                 app:layout_constraintTop_toTopOf="@+id/comment" />
 
             <ImageView
-                android:id="@+id/imageView8"
+                android:id="@+id/save"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:layout_marginTop="16dp"
@@ -124,7 +119,18 @@
             android:id="@+id/n_like"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:text="likes" />
+        <TextView
+            android:id="@+id/caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="caption" />
+
+        <TextView
+            android:id="@+id/n_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="comment" />
 
 
     </LinearLayout>

@@ -4,6 +4,7 @@ import ViewProfile
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -94,6 +95,13 @@ class SearchAdapter (var context: Context, var userList: ArrayList<User>): Recyc
             val dialogFragment = ViewProfile.newInstance(userList.get(position).uid!!)
             dialogFragment.show((context as AppCompatActivity).supportFragmentManager, "ViewProfile")
         }
+
+        if (userList.get(position).uid==Firebase.auth.currentUser!!.uid){
+            holder.binding.name.text = "You"
+            holder.binding.follow.visibility = View.GONE
+        }
+
+
     }
 }
 

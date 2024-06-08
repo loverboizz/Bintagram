@@ -10,6 +10,8 @@ import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.databinding.CommentRvBinding
 import com.example.bintagram.utils.USER_NODE
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -28,16 +30,22 @@ class CommentAdapter(var context: Context, var commentList:ArrayList<Comment>): 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         var commentorUid = commentList.get(position).commentorId
-        Firebase.firestore.collection(USER_NODE).document(commentorUid!!).get().addOnSuccessListener {
-            val user:User = it.toObject<User>()!!
+
+        val mDbRef : DatabaseReference
+
+        mDbRef = FirebaseDatabase.getInstance().getReference()
+
+        mDbRef.child(USER_NODE).child(commentorUid!!).get().addOnSuccessListener {
+            val user = it.getValue(User::class.java)!!
             if (user.image.isNullOrEmpty()){
 
             }
             else{
-                Glide.with(context).load(user!!.image).placeholder(R.drawable.user).into(holder.binding.profileImage)
+                Glide.with(context).load(user.image).placeholder(R.drawable.user).into(holder.binding.profileImage)
                 holder.binding.name.text = user.name
             }
         }
+
 
         holder.binding.comment.text = commentList.get(position).comment
 

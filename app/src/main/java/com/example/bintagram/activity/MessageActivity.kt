@@ -93,6 +93,7 @@ class MessageActivity : AppCompatActivity() {
 
                     }
                     messageAdapter.notifyDataSetChanged()
+                    binding.messageRecyclerView.scrollToPosition(messageList.size - 1)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -100,6 +101,10 @@ class MessageActivity : AppCompatActivity() {
                 }
 
             })
+
+        binding.messageBox.setOnClickListener {
+            binding.messageRecyclerView.scrollToPosition(messageList.size - 1)
+        }
 
 
         binding.sendButton.setOnClickListener {
@@ -114,6 +119,7 @@ class MessageActivity : AppCompatActivity() {
                             .setValue(messageObject)
                     }
                 binding.messageBox.setText("")
+                binding.messageRecyclerView.scrollToPosition(messageList.size - 1)
             }
 
         }

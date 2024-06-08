@@ -1,8 +1,10 @@
 package com.example.bintagram.fragments
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
@@ -10,14 +12,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.bintagram.Models.Post
 import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.activity.LoginActivity
+import com.example.bintagram.adapters.PostAdapter
+import com.example.bintagram.adapters.SearchAdapter
 import com.example.bintagram.adapters.ViewPagerAdapter
 import com.example.bintagram.databinding.FragmentProfileBinding
+import com.example.bintagram.utils.FOLLOW
+import com.example.bintagram.utils.LIKE
+import com.example.bintagram.utils.POST
+import com.example.bintagram.utils.SAVE
 import com.example.bintagram.utils.USER_NODE
 import com.example.bintagram.utils.USER_PROFILE_FOLDER
 import com.example.bintagram.utils.uploadImage
@@ -49,6 +63,7 @@ class ProfileFragment : Fragment() {
         binding.tabLayout.setupWithViewPager(binding.viewPager)
     }
 
+    @SuppressLint("RtlHardcoded")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -57,23 +72,49 @@ class ProfileFragment : Fragment() {
         mDbRef = FirebaseDatabase.getInstance().getReference()
         val currentUser = Firebase.auth.currentUser!!
 
+        mDbRef.child(POST).orderByChild("uid").equalTo(currentUser.uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val postCount = snapshot.childrenCount
+                    binding.nPost.text = postCount.toString()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle possible errors
+                }
+            })
+
+        mDbRef.child(FOLLOW).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    var followingCount = 0L
+                    for (userSnapshot in snapshot.children) {
+                        if (userSnapshot.child(currentUser.uid).exists()) {
+                            followingCount++
+                        }
+                    }
+                    binding.nFollower.text = followingCount.toString()
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+
+        mDbRef.child(FOLLOW).child(currentUser.uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // Get the number of followers (number of children under followedUid node)
+                    val followerCount = snapshot.childrenCount
+                    binding.nFollowing.text = followerCount.toString()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+
+
         binding = FragmentProfileBinding.inflate(inflater, container, false)
 
-        binding.deleteProfile.setOnClickListener {
-
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Sign out ??")
-                .setMessage("Are you sure you want to sign out this account ?")
-                .setPositiveButton("Yes") { dialog, which ->
-                    Firebase.auth.signOut()
-                    startActivity(Intent(activity, LoginActivity::class.java))
-                    activity?.finish()
-                }
-                .setNegativeButton("No") { dialog, which ->
-                    dialog.dismiss()
-                }
-                .show()
-        }
 
         // dialog for update profile
         val dialog = Dialog(requireContext())
@@ -216,6 +257,101 @@ class ProfileFragment : Fragment() {
             dialog2.window?.setGravity(Gravity.BOTTOM)
         }
 
+
+        binding.layoutFlg.setOnClickListener{
+            val dialog = Dialog(requireContext())
+            dialog.setContentView(R.layout.like_user)
+            val likeRecyclerView: RecyclerView = dialog.findViewById(R.id.likeRecyclerView)
+            val likeList = ArrayList<User>()
+            val likeAdapter: SearchAdapter
+            likeAdapter = SearchAdapter(requireContext(), likeList)
+            likeRecyclerView.layoutManager= LinearLayoutManager(context)
+            likeRecyclerView.adapter =likeAdapter
+
+            var textView: TextView = dialog.findViewById(R.id.textView5)
+            textView.setText("Following")
+
+            mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).addValueEventListener(object : ValueEventListener{
+                @SuppressLint("SuspiciousIndentation")
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    likeList.clear()
+                    for(userSnapshot in snapshot.children){
+
+                        val user= userSnapshot.getValue(User::class.java)!!
+                            likeList.add(user)
+                    }
+                    likeAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+            dialog.show()
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
+            dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+
+
+
+
+
+        binding.layoutFlr.setOnClickListener {
+            val dialog = Dialog(requireContext())
+            dialog.setContentView(R.layout.like_user)
+
+            val likeRecyclerView: RecyclerView = dialog.findViewById(R.id.likeRecyclerView)
+            val likeList = ArrayList<User>()
+            val likeAdapter = SearchAdapter(requireContext(), likeList)
+            likeRecyclerView.layoutManager = LinearLayoutManager(context)
+            likeRecyclerView.adapter = likeAdapter
+
+            val textView: TextView = dialog.findViewById(R.id.textView5)
+            textView.text = "Follower"
+
+            fun fetchUserDetails(userIds: List<String>) {
+                val usersRef = mDbRef.child(USER_NODE)
+                for (userId in userIds) {
+                    usersRef.child(userId).get().addOnSuccessListener {
+                        val user = it.getValue(User::class.java)
+                        if (user != null) {
+                            likeList.add(user)
+                            likeAdapter.notifyDataSetChanged()  // Notify adapter when user is added
+                        }
+                    }.addOnFailureListener {
+                        // Handle failure if needed
+                    }
+                }
+            }
+
+            val followingUserIds = mutableListOf<String>()
+            mDbRef.child(FOLLOW).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (userSnapshot in snapshot.children) {
+                        if (userSnapshot.child(currentUser.uid).exists()) {
+                            followingUserIds.add(userSnapshot.key!!)
+                        }
+                    }
+                    fetchUserDetails(followingUserIds)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error if needed
+                }
+            })
+
+            dialog.show()
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.window?.attributes?.windowAnimations = R.style.DialoAnimation
+        }
+
+
+
         binding.profileImage.setOnClickListener {
 //            val intent = Intent(activity, SignUpActivity::class.java)
 //            intent.putExtra("MODE",1)
@@ -224,6 +360,87 @@ class ProfileFragment : Fragment() {
 
 
         }
+
+        binding.more.setOnClickListener {
+            val dialogSetting = Dialog(requireContext())
+            dialogSetting.setContentView(R.layout.setting_layout)
+
+            val logout: LinearLayout = dialogSetting.findViewById(R.id.sign_out)
+            val save: LinearLayout = dialogSetting.findViewById(R.id.save)
+
+            logout.setOnClickListener {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Sign out ??")
+                    .setMessage("Are you sure you want to sign out this account ?")
+                    .setPositiveButton("Yes") { dialog, which ->
+                        Firebase.auth.signOut()
+                        startActivity(Intent(activity, LoginActivity::class.java))
+                        activity?.finish()
+                    }
+                    .setNegativeButton("No") { dialog, which ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+
+            save.setOnClickListener {
+                val dialogSave = Dialog(requireContext())
+                dialogSave.setContentView(R.layout.fragment_post_detail)
+
+                val postDetail: RecyclerView = dialogSave.findViewById(R.id.post_detail)
+                var postAdapter: PostAdapter
+                var postList= ArrayList<Post>()
+
+                mDbRef = FirebaseDatabase.getInstance().getReference()
+                postAdapter=  PostAdapter(requireContext(), postList)
+                postDetail.layoutManager= LinearLayoutManager(context)
+                postDetail.adapter=postAdapter
+                postAdapter.scrollToLastClickedPosition(postDetail)
+
+
+                postDetail.apply {
+                    setHasFixedSize(true)
+                    layoutManager = LinearLayoutManager(this.context)
+
+                }
+
+                mDbRef.child(SAVE).child(Firebase.auth.currentUser!!.uid).addValueEventListener(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        postList.clear()
+                        for (postSnapshot in snapshot.children) {
+                            val post = postSnapshot.getValue(Post::class.java)
+                            if (post != null) {
+                                postList.add(post)
+                            }
+                        }
+                        postAdapter.notifyDataSetChanged()
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        // Handle possible errors here.
+                    }
+                })
+
+
+
+                dialogSave.show()
+                dialogSave.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                dialogSave.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                dialogSave.window?.attributes?.windowAnimations = R.style.DialoAnimation
+                dialogSave.window?.setGravity(Gravity.BOTTOM)
+            }
+
+
+
+
+            dialogSetting.show()
+            dialogSetting.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialogSetting.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialogSetting.window?.attributes?.windowAnimations = R.style.DialogAnimation2
+            dialogSetting.window?.setGravity(Gravity.RIGHT)
+        }
+
+
 
         viewPagerAdapter =ViewPagerAdapter(requireActivity().supportFragmentManager)
         viewPagerAdapter.addFragments(MyPostFragment(Firebase.auth.currentUser!!.uid), "My Post")
@@ -242,6 +459,7 @@ class ProfileFragment : Fragment() {
         mDbRef.child(USER_NODE).child(Firebase.auth.currentUser!!.uid).get().addOnSuccessListener {
             val user = it.getValue(User::class.java)
             if (user != null) {
+                binding.name.setTypeface(binding.name.typeface, Typeface.BOLD)
                 binding.name.text = user.name ?: ""
                 binding.caption.text = user.caption ?: ""
 

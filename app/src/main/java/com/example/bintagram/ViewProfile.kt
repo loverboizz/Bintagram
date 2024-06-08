@@ -9,17 +9,22 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.Glide
 import com.example.bintagram.Models.User
 import com.example.bintagram.R
 import com.example.bintagram.activity.MessageActivity
+import com.example.bintagram.adapters.SearchAdapter
 import com.example.bintagram.adapters.ViewPagerAdapter
 import com.example.bintagram.fragments.MyPostFragment
 import com.example.bintagram.fragments.MyReelFragment
 import com.example.bintagram.utils.FOLLOW
+import com.example.bintagram.utils.POST
 import com.example.bintagram.utils.USER_NODE
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.auth.ktx.auth
@@ -56,6 +61,11 @@ class ViewProfile : DialogFragment() {
         val profileImage: CircleImageView = dialog.findViewById(R.id.profile_image)
         val follow: Button = dialog.findViewById(R.id.follow)
         val message: Button = dialog.findViewById(R.id.message)
+        val nPost: TextView = dialog.findViewById(R.id.n_post)
+        val nFollower : TextView = dialog.findViewById(R.id.n_follower)
+        val nFollowing : TextView = dialog.findViewById(R.id.n_following)
+        val layoutFlg : ConstraintLayout = dialog.findViewById(R.id.layout_flg)
+        val layoutFlr : ConstraintLayout = dialog.findViewById(R.id.layout_flr)
 
         val viewPager: ViewPager = dialog.findViewById(R.id.viewPager)
         val tabLayout: TabLayout = dialog.findViewById(R.id.tab_layout)
@@ -82,6 +92,48 @@ class ViewProfile : DialogFragment() {
                 // Handle database error
             }
         })
+        mDbRef.child(POST).orderByChild("uid").equalTo(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val postCount = snapshot.childrenCount
+                    nPost.text = postCount.toString()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle possible errors
+                }
+            })
+
+        mDbRef.child(FOLLOW).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var followingCount = 0L
+                for (userSnapshot in snapshot.children) {
+                    if (userSnapshot.child(userId).exists()) {
+                        followingCount++
+                    }
+                }
+                nFollower.text = followingCount.toString()
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+        })
+
+
+        mDbRef.child(FOLLOW).child(userId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // Get the number of followers (number of children under followedUid node)
+                    val followerCount = snapshot.childrenCount
+                    nFollowing.text = followerCount.toString()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+
+
 
         mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).child(userId)
             .addListenerForSingleValueEvent(object :ValueEventListener{
@@ -105,6 +157,101 @@ class ViewProfile : DialogFragment() {
                 }
 
             })
+
+
+//
+        layoutFlg.setOnClickListener{
+            val dialog1 = Dialog(requireContext())
+            dialog1.setContentView(R.layout.like_user)
+            val likeRecyclerView: RecyclerView = dialog1.findViewById(R.id.likeRecyclerView)
+            val likeList = ArrayList<User>()
+            val likeAdapter: SearchAdapter
+            likeAdapter = SearchAdapter(requireContext(), likeList)
+            likeRecyclerView.layoutManager= LinearLayoutManager(context)
+            likeRecyclerView.adapter =likeAdapter
+
+            var textView: TextView = dialog1.findViewById(R.id.textView5)
+            textView.setText("Following")
+
+            mDbRef.child(FOLLOW).child(userId).addValueEventListener(object : ValueEventListener{
+                @SuppressLint("SuspiciousIndentation")
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    likeList.clear()
+                    for(userSnapshot in snapshot.children){
+
+                        val user= userSnapshot.getValue(User::class.java)!!
+                        likeList.add(user)
+                    }
+                    likeAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
+            dialog1.show()
+            dialog1.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialog1.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog1.window?.attributes?.windowAnimations = R.style.DialoAnimation
+            dialog1.window?.setGravity(Gravity.BOTTOM)
+        }
+
+
+
+
+        layoutFlr.setOnClickListener {
+            val dialog2 = Dialog(requireContext())
+            dialog2.setContentView(R.layout.like_user)
+
+            val likeRecyclerView: RecyclerView = dialog2.findViewById(R.id.likeRecyclerView)
+            val likeList = ArrayList<User>()
+            val likeAdapter = SearchAdapter(requireContext(), likeList)
+            likeRecyclerView.layoutManager = LinearLayoutManager(context)
+            likeRecyclerView.adapter = likeAdapter
+
+            val textView: TextView = dialog2.findViewById(R.id.textView5)
+            textView.text = "Follower"
+
+            fun fetchUserDetails(userIds: List<String>) {
+                val usersRef = mDbRef.child(USER_NODE)
+                for (userId in userIds) {
+                    usersRef.child(userId).get().addOnSuccessListener {
+                        val user = it.getValue(User::class.java)
+                        if (user != null) {
+                            likeList.add(user)
+                            likeAdapter.notifyDataSetChanged()  // Notify adapter when user is added
+                        }
+                    }.addOnFailureListener {
+                        // Handle failure if needed
+                    }
+                }
+            }
+
+            val followingUserIds = mutableListOf<String>()
+            mDbRef.child(FOLLOW).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (userSnapshot in snapshot.children) {
+                        if (userSnapshot.child(userId).exists()) {
+                            followingUserIds.add(userSnapshot.key!!)
+                        }
+                    }
+                    fetchUserDetails(followingUserIds)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error if needed
+                }
+            })
+
+            dialog2.show()
+            dialog2.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            dialog2.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog2.window?.attributes?.windowAnimations = R.style.DialoAnimation
+        }
+        //
+
 
         follow.setOnClickListener {
             mDbRef.child(FOLLOW).child(Firebase.auth.currentUser!!.uid).child(userId)

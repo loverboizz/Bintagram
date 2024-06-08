@@ -40,6 +40,7 @@ class HomeFragment : Fragment() {
     private lateinit var postAdapter: PostAdapter
     private var followList=ArrayList<User>()
     private lateinit var followAdapter: FollowAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -49,6 +50,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
+
         binding= FragmentHomeBinding.inflate(inflater, container, false)
         postAdapter= PostAdapter(requireContext(), postList)
         binding.postRv.layoutManager=LinearLayoutManager(requireContext())

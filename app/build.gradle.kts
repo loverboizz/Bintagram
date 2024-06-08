@@ -88,6 +88,7 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("com.makeramen:roundedimageview:2.3.0")
 
+    implementation ("com.github.yalantis:ucrop:2.2.8-native")
     implementation ("com.github.bumptech.glide:glide:4.16.0")
 
 
@@ -97,3 +98,4 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+

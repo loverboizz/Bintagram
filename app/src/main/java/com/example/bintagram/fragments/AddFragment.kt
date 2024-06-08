@@ -1,5 +1,6 @@
 package com.example.bintagram.fragments
 
+
 import android.content.Intent
 import android.os.Binder
 import android.os.Bundle
