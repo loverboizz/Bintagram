@@ -63,18 +63,6 @@ class MessageActivity : AppCompatActivity() {
                 Picasso.get().load(user.image).into(binding.profileImage)
             }
         }
-
-//        Firebase.firestore.collection(USER_NODE).document(receiverUid!!).get().addOnSuccessListener {
-//            val user: User = it.toObject<User>()!!
-//            binding.name.text = user.name
-//            if(user.image.isNullOrEmpty()){
-//
-//            }
-//            else{
-//                Picasso.get().load(user.image).into(binding.profileImage)
-//            }
-//        }
-
         messageList = ArrayList()
         messageAdapter = MessageAdapter(this, messageList)
         binding.messageRecyclerView.layoutManager = LinearLayoutManager(this)

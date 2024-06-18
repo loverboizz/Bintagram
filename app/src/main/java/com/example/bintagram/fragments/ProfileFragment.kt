@@ -9,10 +9,12 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bintagram.Models.Post
 import com.example.bintagram.Models.User
+import com.example.bintagram.Post.PostActivity
+import com.example.bintagram.Post.ReelActivity
 import com.example.bintagram.R
 import com.example.bintagram.activity.LoginActivity
 import com.example.bintagram.adapters.PostAdapter
@@ -438,6 +442,33 @@ class ProfileFragment : Fragment() {
             dialogSetting.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialogSetting.window?.attributes?.windowAnimations = R.style.DialogAnimation2
             dialogSetting.window?.setGravity(Gravity.RIGHT)
+        }
+
+        fun showPopupMenu(view: View) {
+            val popupMenu = PopupMenu(requireContext(), view)
+            popupMenu.menuInflater.inflate(R.menu.popup_menu, popupMenu.menu)
+
+            popupMenu.setOnMenuItemClickListener { menuItem: MenuItem ->
+                when (menuItem.itemId) {
+                    R.id.add_post -> {
+                        activity?.startActivity(Intent(requireContext(), PostActivity::class.java))
+                        activity?.finish()
+                        true
+                    }
+                    R.id.add_reel -> {
+                        activity?.startActivity(Intent(requireContext(), ReelActivity::class.java))
+                        activity?.finish()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            popupMenu.show()
+        }
+
+        binding.add.setOnClickListener {
+            showPopupMenu(it)
         }
 
 

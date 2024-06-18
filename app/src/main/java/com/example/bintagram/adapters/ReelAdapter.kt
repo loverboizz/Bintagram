@@ -231,7 +231,7 @@ class ReelAdapter(var context:Context, var reelList: ArrayList<Reel>) : Recycler
                         .setTitle("Delete the reel")
                         .setMessage("Are you sure you want to delete this post?")
                         .setPositiveButton("Yes") { dialog, which ->
-                            mDbRef.child(POST).child(reelList.get(position).reelId).removeValue()
+                            mDbRef.child(REEL).child(reelList.get(position).reelId).removeValue()
                                 .addOnSuccessListener {
                                     Toast.makeText(
                                         context,

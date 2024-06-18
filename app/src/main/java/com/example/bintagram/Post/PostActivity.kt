@@ -75,25 +75,16 @@ class PostActivity : AppCompatActivity() {
             val captionText = binding.caption.editText?.text.toString()
             val userId = Firebase.auth.currentUser?.uid
             val currentTime = System.currentTimeMillis().toString()
-
             if (imageUrl == null) {
                 Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
             if (userId == null) {
                 Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
-            val post = Post(
-                postId = mDbRef.push().key!!,
-                postUrl = imageUrl!!,
-                caption = captionText,
-                uid = userId,
-                time = currentTime
-            )
-
+            val post = Post(postId = mDbRef.push().key!!, postUrl = imageUrl!!,
+                caption = captionText, uid = userId, time = currentTime)
             mDbRef.child(POST).child(post.postId).setValue(post).addOnSuccessListener {
                 startActivity(Intent(this@PostActivity, HomeActivity::class.java))
                 finish()

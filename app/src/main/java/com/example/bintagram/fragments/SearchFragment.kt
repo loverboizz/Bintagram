@@ -83,10 +83,7 @@ class SearchFragment : Fragment() {
 
         binding.searchButton.setOnClickListener{
             var text= binding.searchView.text.toString()
-
             val searchText = removeDiacritics(text).toLowerCase().trim()
-
-
             mDbRef.child(USER_NODE).addValueEventListener(object :ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     userList.clear()
@@ -99,13 +96,10 @@ class SearchFragment : Fragment() {
                     }
                     adapter.notifyDataSetChanged()
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                     TODO("Not yet implemented")
                 }
-
             })
-
         }
 
         return binding.root

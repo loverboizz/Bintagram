@@ -210,6 +210,7 @@ class PostAdapter(var context: Context, var postList: ArrayList<Post>): Recycler
                         commentList.add(comment!!)
 
                     }
+                    commentList.reverse()
                     commentAdapter.notifyDataSetChanged()
                 }
 
@@ -462,18 +463,5 @@ class PostAdapter(var context: Context, var postList: ArrayList<Post>): Recycler
 
                 })
         }
-
-
-
-
-
-
-
-
-
     }
-
-
-
-
 }

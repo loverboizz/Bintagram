@@ -53,7 +53,6 @@ class ReelFragment : Fragment() {
                 reelAdapter= ReelAdapter(binding.root.context, reelList)
                 binding.viewPager.adapter=reelAdapter
             }
-
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(context, "ERROR: $error", Toast.LENGTH_LONG).show()
             }
